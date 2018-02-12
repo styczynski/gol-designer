@@ -1,0 +1,23 @@
+{
+  pageTitle: "$author"
+  googleFonts: [
+    'Open+Sans'
+    'Nunito'
+  ]
+  linkedCSS: [
+    "css/normalize"
+    "css/pure-min"
+    "css/font-awesome"
+    "css/style"
+    "css/prism"
+    "css/codeflask"
+  ]
+  linkedPreloadedJS: [
+    "js/jquery"
+    "js/prism"
+    "js/codeflask"
+  ]
+  linkedJS: [
+    "js/index"
+  ]
+}

@@ -1,0 +1,35 @@
+html, body
+  max-width 100%
+  overflow-x hidden
+  background-color white
+
+body
+  max-width 100%
+  font-size 14px
+  font-family 'Comfortaa' cursive
+  background-color	#000000
+
+#golcanvas
+  position absolute
+  top 0
+  left 0
+  height 100%
+  width 100%
+
+#code-wrapper-out
+  position absolute
+  top 2%
+  right 2%
+  width 60%
+  height 35%
+  background-color #f9f9f9
+  border black 1px solid
+
+#code-wrapper
+  position absolute
+  bottom 2%
+  right 2%
+  width 60%
+  height 35%
+  background-color #f9f9f9
+  border black 1px solid
