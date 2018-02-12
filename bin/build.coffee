@@ -136,12 +136,14 @@ module.exports = (grunt) ->
     'inline:release_standalone'
     'htmlmin:release_standalone'
     'copy:release_finish'
+    'copy:release_docs'
     'show_build_stats_standalone'
   ]
 
   grunt.registerTask 'release', [
     'clean'
     'build_release_standalone'
+    'copy:release_docs'
     'clean'
   ]
 

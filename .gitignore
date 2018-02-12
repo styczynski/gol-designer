@@ -4,3 +4,5 @@ release
 release-standalone
 build
 npm-debug.log
+package-lock.json
+index.html

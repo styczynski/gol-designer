@@ -60,6 +60,15 @@ module.exports = (grunt, config, buildTimeConfig, buildTimeConfigStandalone) ->
             expand: true
           }
         ]
+      release_docs:
+        files: [
+          {
+            cwd: './build/'
+            src: '**/*'
+            dest: './docs/'
+            expand: true
+          }
+        ]
     jade:
       build:
         options:
