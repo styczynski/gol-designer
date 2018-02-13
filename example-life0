@@ -1,0 +1,8 @@
+---
+
+Dead: 0
+Dead: countRangeValues(3, Live) > 2
+Live: x==0 && y==0
+Live: (x-40)*(x-40) + (y-25)*(y-25) <= (countRangeValues(3, Live)+1)*(countRangeValues(3, Live)+1)
+Dead
+
