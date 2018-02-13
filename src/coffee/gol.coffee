@@ -1,5 +1,76 @@
-module.exports = ((() ->
+dat = require 'dat.gui'
+gui = null
+life = {}
 
+module.exports = ((() ->
+  
+  codeInput = null
+  codeOutput = null
+  window.onUpdateCompiledCode = (code) ->
+    if codeOutput?
+      codeOutput.update code
+
+  life.speed = 50
+      
+  life.clear = () ->
+    life.map.clear()
+  
+  life.fill = () ->
+  
+  life.codeInput = ''
+  life.simulate = true
+  
+  window.onload = () ->
+  
+    console.log 'Window init dat.gui'
+    gui = new dat.GUI()
+    gui.add life, 'clear'
+    gui.add life, 'randomizeBoard'
+    gui.add life, 'fill'
+    gui.add life, 'codeInput'
+    console.log(gui.__controllers)
+    # gui.__controllers[3].domElement.childNodes[0].style.height = '450px'
+    
+    eNode = $(gui.__controllers[3].domElement)
+    pNode = eNode.parent()
+    eNode.css 'display', 'none'
+    pNode.parent().css 'height', '350px'
+    pNode.append '<div id="datgui-code-input"></div>'
+    codeInput = new CodeFlask()
+    codeInput.run '#datgui-code-input', { language: 'javascript' }
+    codeInput.update """
+Live: Math.random() > 0.99
+Live->Live2: Math.random()>0.99
+Live->Live: true
+Live2->Live2: true
+Dead
+    """
+    
+    gui.add life, 'simulate'
+    gui.add life, 'speed', 0, 100
+    
+    $(document).ready () ->
+      setTimeout () ->
+        el = $('#datgui-code-input')
+        el.css 'width', '100%'
+        el.css 'height', '350px'
+        el.css 'background', 'white'
+        tim = -1
+        
+        compileCode = () ->
+          code = el.text()
+          window.golCompileCode code
+          console.log code
+    
+        el.on 'keydown keyup changed', () ->
+          clearTimeout tim
+          tim = setTimeout () ->
+            compileCode()
+          , 250
+        compileCode()
+        life.stepAuto()
+      , 500
+    
   #  aliveColour = [198, 45, 66, 1]
   aliveColour = [
     [31, 141, 214, 1]
@@ -87,6 +158,78 @@ module.exports = ((() ->
     ready: () -> @paintQueue
     updateCanvas: () ->
       c = $ (@props.id)
+      
+      isDragging=false
+      mouseStartX=0
+      mouseStartY=0
+      
+      handleMouseDown = (e) ->
+        canvasOffset=c.offset()
+        offsetX=canvasOffset.left
+        offsetY=canvasOffset.top
+        canvasWidth=c.width()
+        canvasHeight=c.height()
+        
+        canMouseX=parseInt(e.clientX-offsetX)
+        canMouseY=parseInt(e.clientY-offsetY)
+        if !isDragging
+          mouseStartX=canMouseX
+          mouseStartY=canMouseY
+        isDragging=true
+
+      handleMouseUp = (e) ->
+        canvasOffset=c.offset()
+        offsetX=canvasOffset.left
+        offsetY=canvasOffset.top
+        canvasWidth=c.width()
+        canvasHeight=c.height()
+      
+        canMouseX=parseInt(e.clientX-offsetX)
+        canMouseY=parseInt(e.clientY-offsetY)
+        mouseStartX=0
+        mouseStartY=0
+        isDragging=false
+
+      handleMouseOut = (e) ->
+        canvasOffset=c.offset()
+        offsetX=canvasOffset.left
+        offsetY=canvasOffset.top
+        canvasWidth=c.width()
+        canvasHeight=c.height()
+      
+        canMouseX=parseInt(e.clientX-offsetX)
+        canMouseY=parseInt(e.clientY-offsetY)
+        mouseStartX=0
+        mouseStartY=0
+        
+      handleMouseMove = (e) =>
+        canvasOffset=c.offset()
+        offsetX=canvasOffset.left
+        offsetY=canvasOffset.top
+        canvasWidth=c.width()
+        canvasHeight=c.height()
+        
+        canMouseX=parseInt(e.clientX-offsetX)
+        canMouseY=parseInt(e.clientY-offsetY)
+        mouseDeltaX=canMouseX-mouseStartX
+        mouseDeltaY=canMouseY-mouseStartY
+        
+        mouseDeltaRelX = mouseDeltaX/canvasWidth
+        mouseDeltaRelY = mouseDeltaY/canvasHeight
+        
+        if isDragging
+          if @props.onDrag
+            @props.onDrag mouseDeltaRelX, mouseDeltaRelY, this
+        
+      c.mousedown (e) ->
+        handleMouseDown e
+      c.mousemove (e) ->
+        handleMouseMove e
+      c.mouseup (e) ->
+        handleMouseUp e
+      c.mouseout (e) ->
+        handleMouseOut e
+      
       ctx = c[0].getContext("2d")
       props = @props
       @canvas = {
@@ -94,6 +237,8 @@ module.exports = ((() ->
         dom: c
         w: 0
         h: 0
+        shiftX: 0
+        shiftY: 0
         update: () ->
           @w = (props.w())
           @h = (props.h())
@@ -101,6 +246,15 @@ module.exports = ((() ->
           @x.canvas.height = @h
       }
       @canvas.update()
+    
+    moveBy: (x, y) ->
+      @canvas.shiftX += x
+      @canvas.shiftY += y
+    
+    moveTo: (x, y) ->
+      @canvas.shiftX = x
+      @canvas.shiftY = y
+    
     constructor: (@props) ->
       @paintQueue = new CanvasHandlerPromise {
         canvasHandler: this
@@ -152,7 +306,13 @@ module.exports = ((() ->
             fi = fi_lower_l
           fi = Math.max fi_lower_l, fi
           fi = Math.min fi_upper_l, fi
-          @alphaMask[x][y] = fi
+          # @alphaMask[x][y] = fi
+          @alphaMask[x][y] = 1
+    clear: () ->
+      for x in [0..@w] by 1
+        for y in [0..@h] by 1
+          @map[x][y] = 0
+          @mapBuffer[x][y] = 0
     set: (x, y, name) ->
       if @map[x]?
         if @map[x][y]?
@@ -182,8 +342,8 @@ module.exports = ((() ->
       totw = field_w * @w
       toth = field_h * @h
 
-      shift_x = (c.w - totw) / 2.0
-      shift_y = (c.h - toth) / 2.0
+      shift_x = c.shiftX + (c.w - totw) / 2.0
+      shift_y = c.shiftY + (c.h - toth) / 2.0
 
       field_rw = field_w - field_margin_left
       field_rh = field_h - field_margin_top
@@ -400,15 +560,18 @@ module.exports = ((() ->
   val = "Live"
 
   #                80, 50
-  map = new GOLMap 80, 50, condNormal
+  life.map = new GOLMap 80, 50, condNormal
 
   c = handleCanvas({
     id: '#golcanvas'
     w: () -> $(window).width() #$('#golcanvas').width()
     h: () -> $(window).height() #$('#golcanvas').height()
+    onDrag: (x, y, c) ->
+      c.moveBy (x*80), (y*50)
+      c.flush()
   })
 
-  makeSomeStuff = (strength) ->
+  life.randomizeBoardEx = (strength) ->
     box_x_rng = [0, 80]
     box_y_rng = [0, 80]
     prb = Math.random()*50+50
@@ -420,37 +583,41 @@ module.exports = ((() ->
           y0 = Math.random()*(box_y_rng[1]-box_y_rng[0])+box_y_rng[0]
           x0 = parseInt x0
           y0 = parseInt y0
-          map.set x0, y0, val
-
-  t = 101
-  makeSomeStuff(10)
-  step = () ->
-    if t>10
-      makeSomeStuff(10)
-      t = 0
+          life.map.set x0, y0, val
+  
+  life.randomizeBoard = () ->
+    life.randomizeBoardEx(10)
+          
+  life.step = () ->
+    if !life.simulate
+      return 0
     s = 0
-    map.step(s, s)
+    life.map.step(s, s)
     c.flush()
-    ++t
+    return 1
 
-  window.step = () ->
-    step()
-
-  setInterval () ->
-    step()
-  , 500
-
+  life.stepAuto = () ->
+    life.step()
+    setTimeout () ->
+      life.stepAuto()
+    , (100-life.speed) * 10
+    
   c
   .on(window, 'resize')
   .paint (c) ->
     c.x.fillStyle = 'rgba(0, 45, 66, 0.1)'
     c.x.fillRect(0, 0, c.w, c.height)
-  .paint map
+  .paint life.map
 
 
-  window.golMap = map
+  window.life = life
   window.golCompileCode = (code) ->
-    map.conditioner = (compileCodeToConditioner code)
+    life.map.conditioner = (compileCodeToConditioner code)
+    
 
+  # codeOutput = new CodeFlask()
+  # window.codeOutput = codeOutput
+  # codeOutput.run '#code-wrapper-out', { language: 'javascript' }
 
+    
 )())
