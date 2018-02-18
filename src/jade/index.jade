@@ -3,7 +3,7 @@ html
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=600, initial-scale=1")
-    
+    script(src="https://unpkg.com/tippy.js@2.2.2/dist/tippy.all.min.js")
     title #{pageTitle}
     
   body
@@ -18,4 +18,17 @@ html
       each jsPath in linkedJS
         script(type="text/javascript" src="#{jsPath}.js")
   
+    span#fieldMask
+    span#fieldMaskTooltipContent
+    div#slyFrame
+      ul(class="slidee")
+        li
+          div.text
+            | GOL
+        li
+          div.text
+            | Life-63
+        li
+          div.text
+            | Life-42
     canvas#golcanvas

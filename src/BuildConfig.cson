@@ -15,7 +15,8 @@
   linkedPreloadedJS: [
     "js/jquery"
     "js/prism"
-    "js/codeflask"
+    "js/codeflask",
+    "js/sly"
   ]
   linkedJS: [
     "js/index"

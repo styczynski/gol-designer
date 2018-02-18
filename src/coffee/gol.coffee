@@ -14,13 +14,24 @@ module.exports = ((() ->
       
   life.clear = () ->
     life.map.clear()
-  
+    
   life.fill = () ->
   
   life.codeInput = ''
   life.simulate = true
   
   window.onload = () ->
+  
+    $(document).ready () ->
+      slyOptions = {
+        horizontal: 1
+        itemNav: 'centered'
+        speed: 300
+        mouseDragging: 1
+        touchDragging: 1
+      }
+      console.log($('#slyFrame'))
+      slyFrame = new Sly($('#slyFrame'), slyOptions).init()
   
     console.log 'Window init dat.gui'
     gui = new dat.GUI()
@@ -172,6 +183,7 @@ Dead
         
         canMouseX=parseInt(e.clientX-offsetX)
         canMouseY=parseInt(e.clientY-offsetY)
+        
         if !isDragging
           mouseStartX=canMouseX
           mouseStartY=canMouseY
@@ -216,6 +228,12 @@ Dead
         
         mouseDeltaRelX = mouseDeltaX/canvasWidth
         mouseDeltaRelY = mouseDeltaY/canvasHeight
+        
+        mouseDeltaXCanvas=canMouseX-@canvas.shiftX
+        mouseDeltaYCanvas=canMouseY-@canvas.shiftY
+        
+        if @props.onMove
+          @props.onMove mouseDeltaXCanvas, mouseDeltaYCanvas, this
         
         if isDragging
           if @props.onDrag
@@ -276,7 +294,10 @@ Dead
     alphaMask: null
     w: 0
     h: 0
+    field_w: 0
+    field_h: 0
     conditioner: null
+    hoverListener: null
     initMatrix: () ->
       v = []
       for x in [0..@w] by 1
@@ -308,6 +329,8 @@ Dead
           fi = Math.min fi_upper_l, fi
           # @alphaMask[x][y] = fi
           @alphaMask[x][y] = 1
+    onFieldHover: (fn) ->
+      @hoverListener = fn
     clear: () ->
       for x in [0..@w] by 1
         for y in [0..@h] by 1
@@ -330,32 +353,73 @@ Dead
       for x in [movx..@w-movx] by 1
         for y in [movy..@h-movy] by 1
           @map[x][y] = @mapBuffer[x+movx][y+movy]
+    onMouseMove: (x, y, c) ->
+      totw = @field_w * @w
+      toth = @field_h * @h
+      field_x = Math.ceil((x - (c.canvas.w - totw) / 2.0)/@field_w)
+      field_y = Math.ceil((y - (c.canvas.h - toth) / 2.0)/@field_h)
+      
+      @hoveredFieldX = field_x
+      @hoveredFieldY = field_y
+      
+      field_x_abs = (field_x-1) * @field_w + c.canvas.shiftX + (c.canvas.w - totw) / 2.0
+      field_y_abs = (field_y-1) * @field_h + c.canvas.shiftY + (c.canvas.h - toth) / 2.0
+      
+      
+      # c.canvas.x.fillStyle = 'rgba(0, 45, 66, 0.1)'
+      # c.canvas.x.fillRect(0, 0, c.canvas.w, c.canvas.height)
+      # @paint(c.canvas)
+      c.flush()
+      
+      if @hoverListener?
+        state = @map[field_x][field_y]
+        @hoverListener @hoveredFieldX, @hoveredFieldY, field_x_abs, field_y_abs, {
+          x: @hoveredFieldX
+          y: @hoveredFieldY
+          absX: field_x_abs
+          absY: field_y_abs
+          state: state
+          stateName: @conditioner.translateStateID state
+        }
     paint: (c) ->
       zoom = 1.5
       field_margin_left = 2
       field_margin_top = 2
-      field_w = (c.w*zoom) / @w
-      field_h = (c.h*zoom) / @h
+      @field_w = (c.w*zoom) / @w
+      @field_h = (c.h*zoom) / @h
 
-      field_w = Math.min field_w, field_h
-      field_h = field_w
-      totw = field_w * @w
-      toth = field_h * @h
+      @field_w = Math.min @field_w, @field_h
+      @field_h = @field_w
+      totw = @field_w * @w
+      toth = @field_h * @h
 
       shift_x = c.shiftX + (c.w - totw) / 2.0
       shift_y = c.shiftY + (c.h - toth) / 2.0
 
-      field_rw = field_w - field_margin_left
-      field_rh = field_h - field_margin_top
+      field_rw = @field_w - field_margin_left
+      field_rh = @field_h - field_margin_top
       for x in [0..@w] by 1
         for y in [0..@h] by 1
           c.x.save()
-          c.x.translate(x*field_w+shift_x, y*field_h+shift_y)
+          c.x.translate(x*@field_w+shift_x, y*@field_h+shift_y)
           rgba = @conditioner.colour @map[x][y]
           rgba[3] *= @alphaMask[x][y]
-
+          
           c.x.fillStyle = "rgba(" + (rgba.join ',') + ")"
           c.x.fillRect(-field_rw, -field_rh, field_rw, field_rh)
+
+          if x == @hoveredFieldX && y == @hoveredFieldY
+            cStrokeStyleBckp = c.x.strokeStyle
+            cLineWidthBckp = c.x.lineWidth
+            c.x.strokeStyle = 'white'
+            c.x.lineWidth = '4'
+            
+            c.x.rect(-field_rw, -field_rh, field_rw, field_rh)
+            c.x.stroke()
+            
+            c.x.lineWidth = cLineWidthBckp
+            c.x.strokeStyle = cStrokeStyleBckp
+         
           c.x.restore()
 
 
@@ -529,6 +593,11 @@ Dead
           #Math.min(aliveColour[3], deadColour[3]) + (v/(@states-1))*Math.abs(aliveColour[3] - deadColour[3])
         ]
     }
+    conditioner.translateStateID = (id) ->
+      for kname,kid of statesNamesAliases
+        if id == kid
+          return kname
+      return 'Unknown'
     conditioner.translateStateName = (name) ->
       if not statesNamesAliases[name]?
         if defaultDecl != null
@@ -561,7 +630,35 @@ Dead
 
   #                80, 50
   life.map = new GOLMap 80, 50, condNormal
+  
+  $(document).ready () ->
+    template = document.querySelector('#fieldMaskTooltipContent')
+    tippy '#fieldMask', {
+      html: template
+      arrow: true
+      animation: 'fade'
+      distance: 15
+      arrowTransform: 'scale(2)'
+    }
+      
+    # Hover listener
+    life.map.onFieldHover (x, y, xAbs, yAbs, props) ->
+    
+      if life.simulate
+        return false
+    
+      template.innerHTML = """
+<b>Cell <i>#{x} x #{y}</i></b>
+<br>
+<b>Type:</b> <i>#{props.stateName}</i><br>
 
+"""
+      fmask = $('#fieldMask')
+      fmask.css 'width', "#{life.map.field_w}px"
+      fmask.css 'height', "#{life.map.field_h}px"
+      fmask.css 'left', "#{xAbs}px"
+      fmask.css 'top', "#{yAbs}px"
+  
   c = handleCanvas({
     id: '#golcanvas'
     w: () -> $(window).width() #$('#golcanvas').width()
@@ -569,6 +666,8 @@ Dead
     onDrag: (x, y, c) ->
       c.moveBy (x*80), (y*50)
       c.flush()
+    onMove: (x, y, c) ->
+      life.map.onMouseMove x, y, c
   })
 
   life.randomizeBoardEx = (strength) ->
