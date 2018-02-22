@@ -61,6 +61,7 @@ defaultLifeTypes = {
   }
   'x==y': {
     color: [0, 255, 0]
+    templates: {}
     code: """
       Dead: 0
       Dead: countRangeValues(3, Live) > 2
@@ -71,6 +72,17 @@ defaultLifeTypes = {
   }
   'V7': {
     color: [0, 0, 255]
+    templates: {
+      'Dot': {
+        '0x0': 'V1'
+      }
+      'V3-Block': {
+        '0x0': 'V3'
+        '1x0': 'V3'
+        '0x1': 'V3'
+        '1x1': 'V3'
+      }
+    }
     code: """
       Live->V1: 1
       V1: get(x-1,y) + get(x+1, y) + get(x,y-1) + get(x, y+1) == 1
@@ -93,6 +105,9 @@ module.exports = ((() ->
   codeInput = null
   codeOutput = null
 
+  templatesFrame = null
+  templatesFrameIndex = 0
+  
   life.lifeTypes = defaultLifeTypes
   for name, props of life.lifeTypes
     life.lifeTypes[name].conditioner = (GOLCompiler.compile props.code)
@@ -119,7 +134,32 @@ module.exports = ((() ->
   life.simulate = true
   life.type = Object.keys(life.lifeTypes)[0]
   
+  installTemplatesFrameHook = () ->
+    templatesFrame.on 'active', (eventName, eventIndex) ->
+      if eventIndex >= templatesFrameIndex
+        return false
+      console.log 'TEMPLATES_FRAME_ON_ACTIVE'
+      if life.lifeTypes[life.type].templates?
+        templatesNames = Object.keys(life.lifeTypes[life.type].templates)
+        selectedTemplateName = templatesNames[eventIndex]
+        if life.currentTemplate == selectedTemplateName
+          life.currentTemplate = null
+          templatesFrameNode = $ '#templatesFrame'
+          #templatesFrameNode.find('li.active').removeClass('active')
+          life.map.setPastedStructure null
+          templatesFrame.activate templatesFrameIndex
+        else
+          life.currentTemplate = selectedTemplateName
+        console.log "TEMPLATE ==> #{life.currentTemplate}"
+        life.map.setPastedStructure life.lifeTypes[life.type].templates[life.currentTemplate]
+  
   updateTemplates = () ->
+    if templatesFrame?
+      templatesFrame.destroy()
+      $('#templatesFrame').sly(false)
+      templatesFrame = null
+      templatesFrameIndex = 0
+      
     templatesContentNode = $('#templatesContent')
     templatesContentNode.children().remove()
     if life.lifeTypes[life.type].templates?
@@ -127,6 +167,36 @@ module.exports = ((() ->
         templateNode = $ '<li></li>'
         templateNode.text templateName
         templatesContentNode.append templateNode
+        ++templatesFrameIndex
+      templateNode = $ '<li class="template-null"></li>'
+      #templateNode.css 'display', 'none'
+      templateNode.css 'opacity', '0'
+      templatesContentNode.append templateNode
+        
+    if not templatesFrame?
+      templatesSlyOptions = {
+        horizontal: 0
+        itemNav: 'centered'
+        activateOn: 'click',
+        mouseDragging: 1,
+        touchDragging: 1,
+        releaseSwing: 1,
+        startAt: 0,
+        scrollBy: 1,
+        activatePageOn: 'click',
+        speed: 300,
+        elasticBounds: 1,
+        dragHandle: 1,
+        dynamicHandle: 1,
+        clickBar: 1,
+      }
+      templatesFrame = new Sly($('#templatesFrame'), templatesSlyOptions)
+      
+      templatesFrame.on 'load', () ->
+        templatesFrame.activate templatesFrameIndex
+        installTemplatesFrameHook()
+      
+      templatesFrame.init()
   
   window.onload = () ->
   
@@ -168,43 +238,7 @@ module.exports = ((() ->
       slyFrame.init()
       life.setType (Object.keys(life.lifeTypes)[0])
       
-      templatesSlyOptions = {
-        horizontal: 0
-        itemNav: 'centered'
-        activateOn: 'click',
-        mouseDragging: 1,
-        touchDragging: 1,
-        releaseSwing: 1,
-        startAt: 0,
-        scrollBy: 1,
-        activatePageOn: 'click',
-        speed: 300,
-        elasticBounds: 1,
-        dragHandle: 1,
-        dynamicHandle: 1,
-        clickBar: 1,
-      }
-      
       updateTemplates()
-      
-      templatesFrame = new Sly($('#templatesFrame'), templatesSlyOptions)
-      
-      templatesFrame.on 'load', () ->
-        templatesFrame.on 'active', (eventName, eventIndex) ->
-          if life.lifeTypes[life.type].templates?
-            templatesNames = Object.keys(life.lifeTypes[life.type].templates)
-            selectedTemplateName = templatesNames[eventIndex]
-            if life.currentTemplate == selectedTemplateName
-              life.currentTemplate = null
-              templatesFrameNode = $ '#templatesFrame'
-              templatesFrameNode.find('li.active').removeClass('active')
-              life.map.setPastedStructure null
-            else
-              life.currentTemplate = selectedTemplateName
-            console.log "TEMPLATE ==> #{life.currentTemplate}"
-            life.map.setPastedStructure life.lifeTypes[life.type].templates[life.currentTemplate]
-          
-      templatesFrame.init()
       
       
     console.log 'Window init dat.gui'
@@ -389,8 +423,9 @@ module.exports = ((() ->
         life.currentTemplate = null
         life.currentTemplate = null
         templatesFrameNode = $ '#templatesFrame'
-        templatesFrameNode.find('li.active').removeClass('active')
+        #templatesFrameNode.find('li.active').removeClass('active')
         life.map.setPastedStructure null
+        templatesFrame.activate templatesFrameIndex
       else
         life.map.set mapCoords[0], mapCoords[1], 'Live'
   })).ready()
