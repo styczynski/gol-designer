@@ -55,12 +55,28 @@ body
 
 #slyFrame .slidee li
   float left
-  background-color red
+  background-color #f00
   margin 0 5px 0 0
   padding 0
   width 125px
-  height 100%
-  background white
+  height 91%
+  background black
+  color white
+  border-right gray solid 1px
+  border-left gray solid 1px
+  border-bottom 11px solid #e61d5f
+ 
+#slyFrame .slidee li:hover
+  background #ffffff1f
+  border-bottom 16px solid #1d89e6
+  height 84%
+  transition all 0.3s
+  
+#slyFrame .slidee li.active
+  background #e61d5f
+  border-bottom 11px solid #ffffff1f
+  height 84%
+  transition all 0.3s
 
 #slyFrame .slidee li .text
   text-align center
@@ -71,4 +87,45 @@ body
   font-size 110%
   font-family 'Consolas'
   
+#propDisplay
+  background black
+  width 150px
+  height 246px
+  position absolute
+  top 30px
+  
+#propDisplay .col .box
+  width 20px
+  height 20px
+  background red
 
+#propDisplay .row
+  border-left 3px solid #e61d5f
+  border-bottom 1px solid #2c2c2c
+  padding-left 10px
+  font-family "Lucida Grande", sans-serif
+  color #eee
+  font-size 12px
+
+select
+  color black !important
+  
+#templatesFrame
+  height 165px
+  
+#templatesContent li
+  border-left 3px solid green
+  height 40px
+  width 111px
+  margin-bottom -1px
+  border-right gray solid 1px
+  border-top gray solid 1px
+  border-bottom gray solid 1px
+  margin-left -48px
+  color white
+  padding-left 5px
+  padding-top 5px
+  
+#templatesContent li.active
+  border-left 3px solid #e61d5f
+  margin-left -42px

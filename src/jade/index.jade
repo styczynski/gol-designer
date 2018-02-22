@@ -17,18 +17,18 @@ html
         link(rel="stylesheet" href="#{cssPath}.css")
       each jsPath in linkedJS
         script(type="text/javascript" src="#{jsPath}.js")
-  
+    
+    div#propDisplay
+      div.row.col
+        div.box
+      div.row.state
+      div.row.position
+      div.row.modifTime
+      div.row.prevType
+      div.row.templates#templatesFrame
+        ul#templatesContent(class="slidee")
     span#fieldMask
     span#fieldMaskTooltipContent
     div#slyFrame
-      ul(class="slidee")
-        li
-          div.text
-            | GOL
-        li
-          div.text
-            | Life-63
-        li
-          div.text
-            | Life-42
+      ul#slyContent(class="slidee")
     canvas#golcanvas
