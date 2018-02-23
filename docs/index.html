@@ -3,12 +3,16 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=600, initial-scale=1">
+    <script src="https://unpkg.com/tippy.js@2.2.2/dist/tippy.all.min.js"></script>
     <title>Piotr Styczyński</title>
   </head>
   <body><span style="display:none;">
       <script type="text/javascript" src="js/jquery.js"></script>
       <script type="text/javascript" src="js/prism.js"></script>
       <script type="text/javascript" src="js/codeflask.js"></script>
+      <script type="text/javascript" src="js/sly.js"></script>
+      <script type="text/javascript" src="js/lz-string.min.js"></script>
+      <script type="text/javascript" src="js/sha256.min.js"></script>
       <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
       <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
       <link rel="stylesheet" href="css/normalize.css">
@@ -18,6 +22,41 @@
       <link rel="stylesheet" href="css/prism.css">
       <link rel="stylesheet" href="css/codeflask.css">
       <script type="text/javascript" src="js/index.js"></script></span>
+    <div id="saveLifeDialog">
+      <div class="content">
+        <div class="row lifeName">
+          <div class="label">Life name</div>
+          <input>
+        </div>
+        <div class="row lifeStats">
+          <div class="label">Properties</div>
+          <div class="stats">Stats</div>
+        </div>
+      </div>
+      <div class="btn save">Save</div>
+      <div class="btn cancel">Cancel</div>
+    </div>
+    <div id="seeUrlDialog">
+      <div class="row text">The link to your save was generated below please copy it:</div>
+      <div class="row url">Generating url...</div>
+      <div class="btn ok">Ok</div>
+    </div>
+    <div id="toolbox"></div>
+    <div id="propDisplay">
+      <div class="row col">
+        <div class="box"></div>
+      </div>
+      <div class="row state"></div>
+      <div class="row position"></div>
+      <div class="row modifTime"></div>
+      <div class="row prevType"></div>
+      <div id="templatesFrame" class="row templates">
+        <ul id="templatesContent" class="slidee"></ul>
+      </div>
+    </div><span id="fieldMask"></span><span id="fieldMaskTooltipContent"></span>
+    <div id="slyFrame">
+      <ul id="slyContent" class="slidee"></ul>
+    </div>
     <canvas id="golcanvas"></canvas>
   </body>
 </html>
