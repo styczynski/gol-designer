@@ -1,14 +1,14 @@
-html,
 body {
   max-width: 100%;
-  overflow-x: hidden;
-  background-color: #fff;
+  overflow: hidden;
+  background: #fff;
 }
 body {
   max-width: 100%;
   font-size: 14px;
   font-family: 'Comfortaa' cursive;
-  background-color: #000;
+  background: #fff !important;
+  overflow: hidden !important;
 }
 #golcanvas {
   position: absolute;
@@ -16,6 +16,7 @@ body {
   left: 0;
   height: 100%;
   width: 100%;
+  z-index: -11;
 }
 #code-wrapper-out {
   position: absolute;
@@ -34,4 +35,257 @@ body {
   height: 35%;
   background-color: #f9f9f9;
   border: #000 1px solid;
+}
+#fieldMask {
+  z-index: 999999;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+}
+#slyFrame {
+  width: 100%;
+  height: 30px;
+  padding: 0;
+  z-index: 99999999 !important;
+  background: #000;
+}
+#slyFrame .slidee {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  list-style: none;
+}
+#slyFrame .slidee li {
+  float: left;
+  background-color: #f00;
+  margin: 0 5px 0 0;
+  padding: 0;
+  width: 125px;
+  height: 91%;
+  background: #000;
+  color: #fff;
+  border-right: #808080 solid 1px;
+  border-left: #808080 solid 1px;
+  border-bottom: 11px solid #e61d5f;
+}
+#slyFrame .slidee li:hover {
+  background: rgba(255,255,255,0.122);
+  border-bottom: 16px solid #1d89e6;
+  height: 84%;
+  transition: all 0.3s;
+}
+#slyFrame .slidee li.active {
+  background: #e61d5f;
+  border-bottom: 11px solid rgba(255,255,255,0.122);
+  height: 84%;
+  transition: all 0.3s;
+}
+#slyFrame .slidee li .text {
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 5%;
+  font-weight: bold;
+  font-size: 110%;
+  font-family: 'Consolas';
+}
+#propDisplay {
+  background: #000;
+  width: 150px;
+  height: 321px;
+  position: absolute;
+  top: 30px;
+}
+#propDisplay .col .box {
+  width: 20px;
+  height: 20px;
+  background: #f00;
+}
+#propDisplay .row {
+  border-left: 3px solid #e61d5f;
+  border-bottom: 1px solid #2c2c2c;
+  padding-left: 10px;
+  font-family: "Lucida Grande", sans-serif;
+  color: #eee;
+  font-size: 12px;
+}
+select {
+  color: #000 !important;
+}
+#templatesFrame {
+  height: 239px;
+}
+#templatesContent li {
+  border-left: 3px solid #008000;
+  height: 40px;
+  width: 135px;
+  margin-bottom: -1px;
+  border-right: #808080 solid 1px;
+  border-top: #808080 solid 1px;
+  border-bottom: #808080 solid 1px;
+  margin-left: -48px;
+  color: #fff;
+  padding-left: 5px;
+  padding-top: 5px;
+  overflow: hidden;
+}
+#templatesContent li.active {
+  border-left: 3px solid #e61d5f;
+  margin-left: -42px;
+}
+.templateRowPreview {
+  float: right;
+  margin-top: -34px;
+}
+#toolbox {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  height: 34px;
+  width: 250px;
+}
+#toolbox div.tool {
+  border-top: 3px solid #e61d5f;
+  width: 23px;
+  height: 50px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 100;
+  padding-top: 6px;
+  padding-left: 6px;
+  padding-right: 2px;
+  display: inline-block;
+  background: #000;
+}
+#toolbox div.tool.active {
+  border-top: 3px solid #e61d5f;
+  color: #e61d5f;
+  background: #fff;
+}
+#toolbox div.tool.disabled {
+  color: #808080 !important;
+  border-top: 3px solid #000 !important;
+}
+#toolbox div.tool:hover {
+  position: relative;
+  top: -3px;
+  border-top: 3px solid #1d89e6;
+}
+#saveLifeDialog {
+  position: absolute;
+  width: 393px;
+  height: 132px;
+  background: #000;
+  border-top: 3px solid #e61d5f;
+  top: 30%;
+  left: 30%;
+}
+#saveLifeDialog .btn.save {
+  width: 50px;
+  height: 20px;
+  border: 2px solid #2c2c2c;
+  position: absolute;
+  left: 30px;
+  bottom: 10px;
+  color: #fff;
+  padding-left: 20px;
+  padding-top: 5px;
+  font-size: 11px;
+  transition: all 0.5s;
+  cursor: pointer;
+}
+#saveLifeDialog .btn.save:hover {
+  background: #e61d5f;
+  color: #fff;
+}
+#saveLifeDialog .btn.cancel {
+  width: 50px;
+  height: 20px;
+  border: 2px solid #2c2c2c;
+  position: absolute;
+  left: 123px;
+  bottom: 10px;
+  background: #000;
+  color: #fff;
+  padding-left: 20px;
+  padding-top: 5px;
+  font-size: 11px;
+  transition: all 0.5s;
+  cursor: pointer;
+}
+#saveLifeDialog .btn.cancel:hover {
+  background: #e61d5f;
+  color: #fff;
+}
+#saveLifeDialog .content {
+  width: 100%;
+  height: 50px;
+}
+#saveLifeDialog div.row {
+  width: 100px;
+  padding-left: 10px;
+  border-left: 2px solid #e61d5f;
+  margin-left: 10px;
+}
+#saveLifeDialog div.row .label {
+  margin-right: 10px;
+  margin-left: 2px;
+  display: inline;
+  color: #fff;
+  font-size: 10px;
+}
+#saveLifeDialog div.row input {
+  background: #000;
+  border: 2px solid #2c2c2c;
+  color: #fff;
+  display: inline;
+}
+#saveLifeDialog div.row .stats {
+  background: #000;
+  color: #fff;
+}
+#seeUrlDialog {
+  position: absolute;
+  width: 503px;
+  height: 302px;
+  background: #000;
+  border-top: 3px solid #e61d5f;
+  top: 30%;
+  left: 30%;
+  color: #fff;
+}
+#seeUrlDialog .btn.ok {
+  width: 50px;
+  height: 20px;
+  border: 2px solid #2c2c2c;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: #000;
+  color: #fff;
+  padding-left: 20px;
+  padding-top: 5px;
+  font-size: 11px;
+  transition: all 0.5s;
+  cursor: pointer;
+}
+#seeUrlDialog .btn.ok:hover {
+  background: #e61d5f;
+  color: #fff;
+}
+#seeUrlDialog div.row {
+  width: 100%;
+  padding-left: 10px;
+  border-left: 2px solid #e61d5f;
+  margin-left: 10px;
+}
+#seeUrlDialog div.row.text {
+  margin-bottom: 15px;
+  margin-top: 10px;
+}
+#seeUrlDialog div.url {
+  font-size: 8px;
+  width: 467px;
+  height: 200px;
+  overflow: scroll;
 }

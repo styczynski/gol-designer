@@ -15,7 +15,10 @@
   linkedPreloadedJS: [
     "js/jquery"
     "js/prism"
-    "js/codeflask"
+    "js/codeflask",
+    "js/sly",
+    "js/lz-string.min",
+    "js/sha256.min"
   ]
   linkedJS: [
     "js/index"
