@@ -7,7 +7,7 @@
 [![Up status](https://img.shields.io/website-up-down-green-red/http/styczynski.ml.svg?style=flat-square "styczynski.ml status")][link isis97]
 
 
-Visit my portfolio here: [http://styczynski.ml](http://styczynski.ml)
+Visit my portfolio here: [http://styczynski.in](http://styczynski.in)
 
 # Build
 
