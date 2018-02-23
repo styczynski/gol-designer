@@ -52,7 +52,7 @@ class CanvasHandler
       mouseXCanvas=canMouseX-@canvas.shiftX
       mouseYCanvas=canMouseY-@canvas.shiftY
       
-      if isDragging and (not isRealDrag)
+      if (not isRealDrag)
         if @props.onClick
           @props.onClick mouseXCanvas, mouseYCanvas, this
       
@@ -97,12 +97,17 @@ class CanvasHandler
         isRealDrag = false
       else
         if lastDownT > 0
-          if (+ new Date()) - lastDownT > 50
+          if (+ new Date()) - lastDownT > 150
             isRealDrag = true
       
       if isRealDrag
         if @props.onDrag
-          @props.onDrag mouseDeltaRelX, mouseDeltaRelY, this
+          @props.onDrag mouseDeltaRelX, mouseDeltaRelY, this, {
+            endX: canMouseX
+            endY: canMouseY
+            startX: mouseStartX
+            startY: mouseStartY
+          }
       
     c.mousedown (e) ->
       handleMouseDown e

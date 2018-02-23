@@ -59,6 +59,8 @@ golUtils = {
 
 class GOLCompiler
   compile: (code) ->
+    console.log code
+    
     revcode = code.split('\n').reverse().join('\n')
     ncode = ""
     defaultDecl = null
@@ -208,7 +210,6 @@ class GOLCompiler
 
     #window.onUpdateCompiledCode( code_without_decl )
 
-    console.log code
     fn = null
     try
       fn = eval code

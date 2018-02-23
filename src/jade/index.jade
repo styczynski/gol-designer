@@ -18,6 +18,29 @@ html
       each jsPath in linkedJS
         script(type="text/javascript" src="#{jsPath}.js")
     
+    div#saveLifeDialog
+      div.content
+        div.row.lifeName
+          div.label
+            | Life name
+          input
+        div.row.lifeStats
+          div.label
+            | Properties
+          div.stats
+            | Stats
+      div.btn.save
+        | Save
+      div.btn.cancel
+        | Cancel
+    div#seeUrlDialog
+      div.row.text
+        | The link to your save was generated below please copy it:
+      div.row.url
+        | Generating url...
+      div.btn.ok
+        | Ok
+    div#toolbox
     div#propDisplay
       div.row.col
         div.box

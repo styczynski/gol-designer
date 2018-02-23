@@ -18,6 +18,7 @@ class GOLMap
   lastMouseMovePosY: 0
   hoveredFieldX: 0
   hoveredFieldY: 0
+  selectBox: null
   lastMouseMoveC: null
   initMetadataMatrix: () ->
     v = []
@@ -91,11 +92,21 @@ class GOLMap
     }
   loadSession: (sess) ->
     @stepLock = true
-    @map = sess.map
-    @metadata = sess.metadata
+    
+    simTime = @simTime
+    @initialize()
+    @simTime = simTime
+    
+    if sess.map?
+      @map = sess.map
+    if sess.metadata?
+      @metadata = sess.metadata
     @mapBuffer = @initMatrix()
-    @alphaMask = sess.alphaMask
+    if sess.alphaMask?
+      @alphaMask = sess.alphaMask
     @ltype = sess.ltype
+    
+    
     @stepLock = false
     @stepBuf()
   onFieldHover: (fn) ->
@@ -105,21 +116,22 @@ class GOLMap
       for y in [0..@h] by 1
         @map[x][y] = 0
         @mapBuffer[x][y] = 0
-  set: (x, y, name) ->
+  setValue: (x, y, val) ->
     if @stepLock
       return false
     if @map[x]?
       if @map[x][y]?
-        val = @lifeObj.lifeTypes[@lifeObj.type].conditioner.translateStateName name
         if @map[x][y] != val
           @metadata[x][y].lastState = @map[x][y]
           @metadata[x][y].timeChanged = @simTime
         @map[x][y] = val
+  set: (x, y, name) ->
+    if @stepLock
+      return false
+    @setValue x, y, (@lifeObj.lifeTypes[@lifeObj.type].conditioner.translateStateName name)
   drawStructure: (x, y, struct) ->
     if @stepLock
       return false
-    console.log "DRAW_STRUCT"
-    console.log struct
     for pos, typeName of struct
       pos = pos.split 'x'
       @set ((parseInt pos[0])+x), ((parseInt pos[1])+y), typeName
@@ -208,16 +220,140 @@ class GOLMap
           x0 = parseInt x0
           y0 = parseInt y0
           @set x0, y0, value
+  getStructFromSelectBox: () ->
+    if not @selectBox?
+      return {}
+    struct = {}
+    
+    maxX = -1000000
+    maxY = -1000000
+    minX = 1000000
+    minY = 1000000
+    
+    for x in [@selectBox.startX..@selectBox.endX] by 1
+      for y in [@selectBox.startY..@selectBox.endY] by 1
+        if @map[x][y] != 0
+          maxX = Math.max(x, maxX)
+          maxY = Math.max(y, maxY)
+          minX = Math.min(x, minX)
+          minY = Math.min(y, minY)
+    
+    shiftX = -minX
+    shiftY = -minY
+    
+    for x in [@selectBox.startX..@selectBox.endX] by 1
+      for y in [@selectBox.startY..@selectBox.endY] by 1
+        if @map[x][y] != 0
+          struct["#{x+shiftX}x#{y+shiftY}"] = (@lifeObj.lifeTypes[@lifeObj.type].conditioner.translateStateID @map[x][y])
+    return struct
+  countNodesInSelectBox: () ->
+    if not @selectBox?
+      return 0
+    nodesCount = 0
+    for x in [@selectBox.startX..@selectBox.endX] by 1
+      for y in [@selectBox.startY..@selectBox.endY] by 1
+        if @map[x][y] != 0
+          ++nodesCount
+    return nodesCount
+  getSelectBox: () ->
+    return @selectBox
+  setSelectBox: (posA, posB) ->
+    if not posA?
+      @selectBox = null
+      return false
+    if not posB?
+      @selectBox = null
+      return false
+    @selectBox = {
+      startX: posA[0]
+      startY: posA[1]
+      endX: posB[0]
+      endY: posB[1]
+      width: posB[0]-posA[0]
+      height: posB[1]-posB[1]
+    }
   canvasXYToBoardXY: (x, y, c) ->
     totw = @field_w * @w
     toth = @field_h * @h
     field_x = Math.ceil((x - (c.canvas.w - totw) / 2.0)/@field_w)
     field_y = Math.ceil((y - (c.canvas.h - toth) / 2.0)/@field_h)
-    return [field_x, field_y]
+    return [field_x - c.canvas.shiftX, field_y - c.canvas.shiftY]
   setPastedStructure: (struct) ->
     @mousePasteStructure = struct
     if not struct?
       @mousePasteStructure = null
+  paintPreview: (c, struct) ->
+    if not struct?
+      return false
+  
+    c.x.fillStyle = 'rgba(0, 45, 66, 0.1)'
+    c.x.fillRect(0, 0, c.w, c.height)
+    
+    w = 10
+    h = 10
+    fieldShiftX = 4
+    fieldShiftY = 4
+    
+    minX = 1000000
+    minY = 1000000
+    maxX = -1000000
+    maxY = -1000000
+    
+    for pos, typeName of struct
+      pos = pos.split 'x'
+      minX = Math.min(parseInt(pos[0]), minX)
+      maxX = Math.max(parseInt(pos[0]), maxX)
+      minY = Math.min(parseInt(pos[1]), minY)
+      maxY = Math.max(parseInt(pos[1]), maxY)
+      
+      
+    fieldShiftX = -minX + 5
+    fieldShiftY = -minY + 5
+    w = Math.abs(maxX - minX + 10)
+    h = Math.abs(maxY - minY + 10)
+    w = Math.max(w, h)
+    h = w
+    
+    zoom = 1
+    field_margin_left = 0
+    field_margin_top = 0
+    field_w = (c.w*zoom) / w
+    field_h = (c.h*zoom) / h
+
+    field_w = Math.min field_w, field_h
+    field_h = field_w
+    totw = field_w * w
+    toth = field_h * h
+
+    shift_x = c.shiftX + (c.w - totw) / 2.0
+    shift_y = c.shiftY + (c.h - toth) / 2.0
+
+    field_rw = field_w - field_margin_left
+    field_rh = field_h - field_margin_top
+    for x in [0..w] by 1
+      for y in [0..h] by 1
+        c.x.save()
+        c.x.translate(x*field_w+shift_x, y*field_h+shift_y)
+        rgba = []
+        rgba = @lifeObj.lifeTypes[@lifeObj.type].conditioner.colour 0
+        #rgba[3] *= @alphaMask[x][y]
+        rgba[3] = 1
+        c.x.fillStyle = "rgba(" + (rgba.join ',') + ")"
+        c.x.fillRect(-field_rw, -field_rh, field_rw+1, field_rh+1)
+        c.x.restore()
+    for pos, typeName of struct
+      pos = pos.split 'x'
+      x = parseInt(pos[0]) + fieldShiftX
+      y = parseInt(pos[1]) + fieldShiftY
+        
+      c.x.save()
+      c.x.translate(x*field_w+shift_x, y*field_h+shift_y)
+      rgba = @lifeObj.lifeTypes[@lifeObj.type].conditioner.colour (@lifeObj.lifeTypes[@lifeObj.type].conditioner.translateStateName typeName)
+      rgba[3] = 1
+      c.x.fillStyle = "rgba(" + (rgba.join ',') + ")"
+      c.x.fillRect(-field_rw, -field_rh, field_rw, field_rh)
+      c.x.restore()
+    
   paint: (c) ->
     zoom = 1.5
     field_margin_left = 2
@@ -255,7 +391,6 @@ class GOLMap
             rgba[0] = parseInt((1-fact)*rgba[0] + fact * lColor[0])
             rgba[1] = parseInt((1-fact)*rgba[1] + fact * lColor[1])
             rgba[2] = parseInt((1-fact)*rgba[2] + fact * lColor[2])
-            console.log("rgba(" + (rgba.join ',') + ")")
               
         rgba[0] = Math.min(Math.max(0, rgba[0]), 255)
         rgba[1] = Math.min(Math.max(0, rgba[1]), 255)
@@ -279,7 +414,6 @@ class GOLMap
         c.x.restore()
     
     if @mousePasteStructure?
-      console.log "Draw pasted"
       for posTxt, typeName of @mousePasteStructure
         pos = posTxt.split 'x'
        
@@ -293,6 +427,15 @@ class GOLMap
         c.x.fillStyle = "rgba(" + (rgba.join ',') + ")"
         c.x.fillRect(-field_rw, -field_rh, field_rw, field_rh)
         c.x.restore()
-        
-
+    
+    if @selectBox?
+      for x in [@selectBox.startX..@selectBox.endX] by 1
+        for y in [@selectBox.startY..@selectBox.endY] by 1
+          rgba = [0, 255, 0, 0.3]
+          c.x.save()
+          c.x.translate(x*@field_w+shift_x, y*@field_h+shift_y)
+          c.x.fillStyle = "rgba(" + (rgba.join ',') + ")"
+          c.x.fillRect(-field_rw, -field_rh, field_rw, field_rh)
+          c.x.restore()
+    
 module.exports = GOLMap
