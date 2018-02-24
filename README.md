@@ -19,7 +19,7 @@ The GOL Designer was designed to make experimets with celluar automata easy.
 > This project should be viewed only as a quick hobbist initiative.
 
 
-It supports the basic life types including standard Convway life, Highlife and many others!<br>
+It supports the basic life types including standard Conway life, Highlife and many others!<br>
 GOL Designer allows you to test most popular structures and make your own with optional session saving that
 let you come back to your life sandbox later!
 
